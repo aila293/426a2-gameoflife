@@ -1,7 +1,7 @@
 $(document).ready(function(){
-    
+
     setClickHandlers();
-    
+
     setSliderDisplays();
     
     enforceParameters();
@@ -16,42 +16,42 @@ $(document).ready(function(){
 //SETUP FUNCTIONS
 var isMouseDown = false;
 function setClickHandlers(){
-    $("#grid").on("click", ".cell", mouseHandler);
-    
-    $('body').mousedown(function() {
-        isMouseDown = true;
-    }).mouseup(function() {
-        isMouseDown = false;
-    });
-    
-    $( "#grid" ).on("mouseenter", ".cell", function( e ) {
-        if (isMouseDown){
-            mouseHandler(e, this);
-        }
-    });
-    
-    $("body").keydown(function(e){
-        if (e.which==32){
-            e.preventDefault();
-            toggleAutomation();
-        } else if (e.which==90){
-            resetEmpty();
-        } else if (e.which==88){
-            resetRandom();
-        } else if (e.which==38){
-            step();
-        }
-    });
+    $("body")
+        .on("click", ".cell", mouseHandler)
+        .on("mouseenter", ".cell", function( e ) {
+            if (isMouseDown){
+                mouseHandler(e, this);
+            }
+        })
+            
+        .mousedown(function() {
+            isMouseDown = true;
+        })
+        .mouseup(function() {
+            isMouseDown = false;
+        })
+            
+        .keydown(function(e){
+            if (e.which==32){   //space
+                e.preventDefault();
+                toggleAutomation();
+            } else if (e.which==90){ //Z
+                resetEmpty();
+            } else if (e.which==88){ //X
+                resetRandom();
+            } else if (e.which==38){ //up arrow
+                step();
+            }
+        });
 }
 
 function mouseHandler(e){
-    var el = e.target;
     if (e.ctrlKey){
-        $(el).removeClass("alive");
+        $(e.target).removeClass("alive");
     } else if (e.shiftKey){
-        $(el).addClass("alive").addClass("has-lived");
+        $(e.target).addClass("alive").addClass("has-lived");
     } else {
-        $(el).toggleClass("alive").addClass("has-lived");
+        $(e.target).toggleClass("alive").addClass("has-lived");
     }    
 }
 
@@ -63,8 +63,11 @@ function setSliderDisplays(){
     });
 }
 
+var $rows;
 function generateGrid(rows, cols){
-    $("#grid").children().remove();  
+    $("#grid").remove();  
+    $("main").append("<div id='grid'></div>");
+    var grid = $("#grid")[0];
     
    for (var i=0;i<rows;i++){
         var row = document.createElement("div");  
@@ -76,27 +79,30 @@ function generateGrid(rows, cols){
             row.appendChild(cell);
         }
         
-        $("#grid")[0].appendChild(row);
+        grid.appendChild(row);
     }
+    $rows = $("#grid div");
 }
 
-function enforceParameters(){
-        
-    $("input[name='r']").on("change", function(){
+var parameters;
+function enforceParameters(){        
+    parameters = $("aside input");
+    
+    $(parameters[3]).on("change", function(){
         var temp_r = this.value;
         $(this).nextAll("input").each(function(){
            this.max = 4*temp_r*temp_r + 4*temp_r -1;
         });
     });
     
-    $("input[name='o']").on("change", function(){
+    $(parameters[4]).on("change", function(){
         var temp_o = this.value;
-        $("input[name='l']")[0].max = temp_o;
+        $(parameters[5])[0].max = temp_o;
     });
     
-    $("input[name='gmax']").on("change", function(){
+    $(parameters[6]).on("change", function(){
         var temp_gmax = this.value;
-        $("input[name='gmin']")[0].max = temp_gmax;
+        $(parameters[7])[0].max = temp_gmax;
     });
 }
 
@@ -111,26 +117,25 @@ function setButtonHandlers(){
     $("#advance").click(step);
     
     $("#new-grid").click(function(){
-        var inputs = $("aside input");
-        generateGrid(inputs[0].value, inputs[1].value);
+        generateGrid(parameters[0].value, parameters[1].value);
     });
 
 }
 
 function resetEmpty(){
-           $(".cell").each(function(){
-            $(this).removeClass("has-lived").removeClass("alive");
-        });
+    $(".cell").each(function(){
+        $(this).removeClass("has-lived").removeClass("alive");
+    });
 }
 function resetRandom(){
-            var odds = Math.random();
-        $(".cell").each(function(){
-            if (Math.random()<odds){
-                $(this).removeClass("alive").removeClass("has-lived");
-            } else {
-                $(this).addClass("alive").addClass("has-lived");      
-            }
-        });  
+    var odds = Math.random();
+    $(".cell").each(function(){
+        if (Math.random()<odds){
+            $(this).removeClass("alive").removeClass("has-lived");
+        } else {
+            $(this).addClass("alive").addClass("has-lived");      
+        }
+    });  
 }
 
 var automationOn = false;
@@ -142,7 +147,7 @@ function toggleAutomation(){
         $("#advance").css("visibility", ["visible"]);
     } else {
         $("#automation").text("Turn Automation Off");
-        timer = setInterval(step, $("input[name='step']").val());
+        timer = setInterval(step, parameters[2].value);
         $("#advance").css("visibility", ["hidden"]);
     }
     automationOn = !automationOn;
@@ -155,16 +160,14 @@ var wraparound;
 var always_alive;
 
 function getConditions(){
-    var inputs = $("aside input");
-    r = inputs[3].value;
-    o = inputs[4].value;
-    l = inputs[5].value;
-    gmax = inputs[6].value;
-    gmin = inputs[7].value; 
+    r = parameters[3].value;
+    o = parameters[4].value;
+    l = parameters[5].value;
+    gmax = parameters[6].value;
+    gmin = parameters[7].value; 
     
-    var options = $("input[name='edge']");
-    wraparound = options[2].checked;
-    always_alive = options[1].checked;
+    always_alive = parameters[9].checked;
+    wraparound = parameters[10].checked;
 }
 
 var cells;
@@ -173,13 +176,15 @@ function step(){
 
     getConditions();
     
-    $("#grid div").each(function(){
+    $rows.each(function(){
         var row = [];
         $(this).children().each(function(){
             row.push($(this).is(".alive"));
+                //store states, not elements, to prevent changes while iterating
         });
         cells.push(row);
     });
+    //console.log("array done");
         
     for (var i=0;i<cells.length;i++){
     for (var j=0;j<cells[0].length;j++){
@@ -192,18 +197,17 @@ function step(){
             if (i_off ==0 && j_off ==0){
                 continue;
             }
-
-            try {                
-                if (getCell(i+i_off, j+j_off)){
-                    alive_count++;
-                } 
-            }catch(err){
-                
-            }
+   
+            if (getCell(i+i_off, j+j_off)){
+                alive_count++;
+                //console.log(i_off+" "+j_off);
+            } 
         }}
+        //console.log(alive_count);
         determineFate(i, j, alive_count);
                 
     }}
+   // console.log("fates done");
 }
         
 function getCell(i,j){
@@ -222,6 +226,12 @@ function getCell(i,j){
         if (i<0){
             i += cells.length;
         }
+    }  else if (i>=cells.length || j>=cells[0].length || j<0 || i<0){
+        if (always_alive){
+            return true;            
+        } else {
+            return false;
+        }
     }
    // console.log(i+" "+j);
 
@@ -229,7 +239,7 @@ function getCell(i,j){
 }
 
 function determineFate(i, j, alive){
-    var cell = $($("#grid div")[i]).children()[j];
+    var cell = $($rows[i]).children()[j];
     if (alive<l || alive>o){
         $(cell).removeClass("alive");
     } else if(alive>=gmin && alive<=gmax){

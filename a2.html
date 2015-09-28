@@ -64,6 +64,9 @@
             margin-left: 40px;
         }
     </style>
+    
+        <script src="jquery.js"></script>
+        <script src="a2.js"></script>
 </head>
 
 
@@ -79,8 +82,7 @@
         <br>
              
       </nav>
-    
-    <main>
+<main>
         
     <aside>
     Rows:<br> <input type="range" name="rows" min="20" value="20" max="200"> <span id="rows"></span> <br>
@@ -97,7 +99,7 @@ Generation minimum:<br> <input type="range" name="gmin" value="3" min="1" max="7
         Edge cells' neighbors: <br>
 <input type="radio" name="edge" value="dead" checked> <span>Always Dead</span><br>
 <input type="radio" name="edge" value="alive" > <span>Always Alive</span><br>
-<input type="radio" name="edge" value="wrap" > <span>Wrap Around</span <br>
+<input type="radio" name="edge" value="wrap" > <span>Wrap Around</span> <br>
         
 <!--        <button id="set-conditions">Reset with new conditions</button>-->
     </aside>
@@ -105,11 +107,9 @@ Generation minimum:<br> <input type="range" name="gmin" value="3" min="1" max="7
 
 
 <div id="grid"></div>
+</main>
 
-        </main>
 </body>
-        <script src="jquery.js"></script>
-        <script src="a2.js"></script>
 
 
 </html>
